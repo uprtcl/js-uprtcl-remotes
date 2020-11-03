@@ -1,2 +1,3 @@
-# js-uprtcl-modules
-UI Modules to render and interact with _Prtcl evees.
+# js-uprtcl-remotes
+
+A collection of EveesRemote services to store Evees on multiple platforms
