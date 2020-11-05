@@ -220,6 +220,7 @@ export class PolkadotConnection extends Connection {
 
   public async getCouncil(at?: number): Promise<string[]> {
     if (!this.api) throw new Error('api undefined');
+    at = at || (await this.getLatestBlock());
     const blockHash = await this.api.rpc.chain.getBlockHash(at);
     const councilAddr = await this.api.query.council.members.at(blockHash);
     return councilAddr.map((address) =>
