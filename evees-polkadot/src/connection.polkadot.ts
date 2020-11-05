@@ -2,13 +2,21 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Option } from '@polkadot/types';
 import { AddressOrPair, Signer } from '@polkadot/api/types';
 import { stringToHex } from '@polkadot/util';
-import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
+import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import {
+  web3Accounts,
+  web3Enable,
+  web3FromAddress,
+} from '@polkadot/extension-dapp';
 import { IdentityInfo, Registration } from '@polkadot/types/interfaces';
 // import { ExtensionStore } from '@polkadot/ui-keyring/stores';
 
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { ChainConnectionDetails, ConnectionDetails } from '@uprtcl/evees-blockchain';
+import {
+  ChainConnectionDetails,
+  ConnectionDetails,
+} from '@uprtcl/evees-blockchain';
 
 const getIdentityInfo = (identity: Option<Registration>) => {
   if (identity && identity.isSome) {
@@ -67,7 +75,7 @@ export class PolkadotConnection extends Connection {
     this.chain = (await this.api.rpc.system.chain()).toString();
 
     this.logger.log('Connected', {
-      api: this.api
+      api: this.api,
     });
   }
 
@@ -82,17 +90,22 @@ export class PolkadotConnection extends Connection {
   public async getAccounts(): Promise<string[]> {
     const allInjected = await web3Enable('uprtcl-wiki');
 
-    this.accounts = (await web3Accounts()).map(a => a.address);
+    this.accounts = (await web3Accounts()).map((a) =>
+      encodeAddress(decodeAddress(a.address), 42)
+    );
     return this.accounts ? this.accounts : [];
   }
 
-  public async connectWallet(userId?: string): Promise<void> {
+  public async connectWallet(): Promise<void> {
     if (!this.api) throw new Error('api not defined');
 
     if (!this.accounts) {
       await this.getAccounts();
     }
-    this.account = userId ?? this.accounts![0];
+    if (!this.accounts) {
+      throw new Error('accounts not defined');
+    }
+    this.account = this.accounts[0];
 
     // Set extension account as signer
     const injector = await web3FromAddress(this.account);
@@ -115,7 +128,11 @@ export class PolkadotConnection extends Connection {
     return getIdentityInfo(<Option<Registration>>identity);
   }
 
-  public async getMutableHead(userId: string, keys: string[], atBlock?: number) {
+  public async getMutableHead(
+    userId: string,
+    keys: string[],
+    atBlock?: number
+  ) {
     if (atBlock !== undefined) {
       this.logger.warn('cant get idenity at block yet... ups');
     }
@@ -127,7 +144,8 @@ export class PolkadotConnection extends Connection {
     head: string | undefined,
     keys: string[]
   ): Promise<TransactionReceipt> {
-    if (!this.account) throw new Error('cannot update identity if account not defined');
+    if (!this.account)
+      throw new Error('cannot update identity if account not defined');
     // update evees entry
     const cid1 = head !== undefined ? head.substring(0, 32) : '';
     const cid0 = head !== undefined ? head.substring(32, 64) : '';
@@ -136,20 +154,23 @@ export class PolkadotConnection extends Connection {
     const additional = identityInfo.additional ? identityInfo.additional : [];
 
     const currentIndexes = [
-      additional.findIndex(entry => entry[0].Raw === keys[0]),
-      additional.findIndex(entry => entry[0].Raw === keys[1])
+      additional.findIndex((entry) => entry[0].Raw === keys[0]),
+      additional.findIndex((entry) => entry[0].Raw === keys[1]),
     ];
 
     if (!currentIndexes.includes(-1)) {
       additional[currentIndexes[0]][1].Raw = cid1;
       additional[currentIndexes[1]][1].Raw = cid0;
     } else {
-      additional.push([{ Raw: keys[0] }, { Raw: cid1 }], [{ Raw: keys[1] }, { Raw: cid0 }]);
+      additional.push(
+        [{ Raw: keys[0] }, { Raw: cid1 }],
+        [{ Raw: keys[1] }, { Raw: cid0 }]
+      );
     }
 
     const newIdentity = {
       ...(identityInfo as any),
-      additional: [...additional]
+      additional: [...additional],
     };
 
     if (!this.api) throw new Error('api undefined');
@@ -160,23 +181,27 @@ export class PolkadotConnection extends Connection {
       if (result === undefined) reject();
       if (this === undefined) reject();
 
-      const unsub = await result.signAndSend(<AddressOrPair>this.account, async result => {
-        if (result.status.isInBlock) {
-        } else if (result.status.isFinalized) {
-          if (unsub) unsub();
-          if (this.api === undefined) throw new Error('api is undefined');
+      const unsub = await result.signAndSend(
+        <AddressOrPair>this.account,
+        async (result) => {
+          if (result.status.isInBlock) {
+          } else if (result.status.isFinalized) {
+            if (unsub) unsub();
+            if (this.api === undefined) throw new Error('api is undefined');
 
-          // TODO: resolve with the txHash and the blockNumber
-          const txHash = result.status.asFinalized.toHex(); // .toString() if string is needed
-          const blockData = await this.api.rpc.chain.getBlock(txHash);
-          if (blockData === undefined) throw new Error('blockData is undefined');
+            // TODO: resolve with the txHash and the blockNumber
+            const txHash = result.status.asFinalized.toHex(); // .toString() if string is needed
+            const blockData = await this.api.rpc.chain.getBlock(txHash);
+            if (blockData === undefined)
+              throw new Error('blockData is undefined');
 
-          resolve({
-            txHash,
-            blockNumber: <number>blockData.block.header.number.toJSON()
-          });
+            resolve({
+              txHash,
+              blockNumber: <number>blockData.block.header.number.toJSON(),
+            });
+          }
         }
-      });
+      );
     });
   }
 
@@ -188,7 +213,7 @@ export class PolkadotConnection extends Connection {
     const { signature } = await this.signer.signRaw({
       address: this.account,
       data: stringToHex(messageText),
-      type: 'bytes'
+      type: 'bytes',
     });
     return signature;
   }
@@ -197,7 +222,9 @@ export class PolkadotConnection extends Connection {
     if (!this.api) throw new Error('api undefined');
     const blockHash = await this.api.rpc.chain.getBlockHash(at);
     const councilAddr = await this.api.query.council.members.at(blockHash);
-    return councilAddr.map(address => address.toString());
+    return councilAddr.map((address) =>
+      encodeAddress(decodeAddress(address), 42)
+    );
   }
 
   public async getLatestBlock(): Promise<number> {
