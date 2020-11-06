@@ -9,7 +9,7 @@ import {
   EveesWorkspace,
   NewPerspectiveData,
   Perspective,
-  Secured
+  Secured,
 } from '@uprtcl/evees';
 
 import { ProposalManifest, ProposalSummary, Vote } from './types';
@@ -46,9 +46,9 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
-    const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(remote =>
-      remote.id.includes('council')
-    );
+    const remote = (this.requestAll(
+      EveesBindings.EveesRemote
+    ) as EveesRemote[]).find((remote) => remote.id.includes('council'));
 
     if (!remote) throw new Error(`council remote not registered`);
     this.remote = (remote as unknown) as EveesPolkadotCouncil;
@@ -64,7 +64,9 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   }
 
   async loadManifest() {
-    const proposalManifest = (await this.remote.store.get(this.proposalId)) as ProposalManifest;
+    const proposalManifest = (await this.remote.store.get(
+      this.proposalId
+    )) as ProposalManifest;
     if (!proposalManifest) throw new Error('Proposal not found');
     this.proposalManifest = proposalManifest;
   }
@@ -73,21 +75,22 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     this.workspace = new EveesWorkspace(this.client, this.recognizer);
     for (const update of this.proposalManifest.updates) {
       if (!update.fromPerspectiveId) {
-        const perspective = (await this.remote.store.get(update.perspectiveId)) as Signed<
-          Perspective
-        >;
-        if (!perspective) throw new Error(`Perspective ${update.perspectiveId} not found`);
+        const perspective = (await this.remote.store.get(
+          update.perspectiveId
+        )) as Signed<Perspective>;
+        if (!perspective)
+          throw new Error(`Perspective ${update.perspectiveId} not found`);
 
         const secured: Secured<Perspective> = {
           id: update.perspectiveId,
           object: perspective,
-          casID: this.remote.store.casID
+          casID: this.remote.store.casID,
         };
         const newPerspective: NewPerspectiveData = {
           details: {
-            headId: update.newHeadId
+            headId: update.newHeadId,
           },
-          perspective: secured
+          perspective: secured,
         };
         this.workspace.newPerspective(newPerspective);
       } else {
@@ -106,7 +109,9 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   }
 
   async loadProposalStatus() {
-    const proposalSummary = await this.remote.proposals.getProposalSummary(this.proposalId);
+    const proposalSummary = await this.remote.proposals.getProposalSummary(
+      this.proposalId
+    );
 
     if (!proposalSummary) throw new Error('Vote status not found');
 
@@ -117,7 +122,9 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     this.proposalStatusUI = {
       summary: proposalSummary,
       council,
-      isCouncilMember: this.remote.userId ? council.includes(this.remote.userId) : false
+      isCouncilMember: this.remote.userId
+        ? council.includes(this.remote.userId)
+        : false,
     };
   }
 
@@ -127,19 +134,15 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
 
   renderCouncilMember() {
     const vote = this.proposalStatusUI.summary.votes.find(
-      vote => vote.member === this.remote.userId
+      (vote) => vote.member === this.remote.userId
     );
 
     return html`
       <uprtcl-indicator class="your-vote" label="Your vote">
         ${this.voting
-          ? html`
-              <uprtcl-loading></uprtcl-loading>
-            `
+          ? html` <uprtcl-loading></uprtcl-loading> `
           : vote
-          ? html`
-              ${vote.value}
-            `
+          ? html` ${vote.value} `
           : this.proposalStatusUI.summary.status === ProposalStatus.Pending
           ? html`
               <div class="vote-buttons">
@@ -165,15 +168,17 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
 
   renderProposalStatus() {
     const votedYes = this.proposalStatusUI.summary.votes.filter(
-      vote => vote.value === VoteValue.Yes
+      (vote) => vote.value === VoteValue.Yes
     );
-    const votedNo = this.proposalStatusUI.summary.votes.filter(vote => vote.value === VoteValue.No);
+    const votedNo = this.proposalStatusUI.summary.votes.filter(
+      (vote) => vote.value === VoteValue.No
+    );
     const blocksRemaining =
       this.proposalManifest.block +
       this.proposalManifest.config.duration -
       this.proposalStatusUI.summary.block;
 
-    const secondsRemaining = blocksRemaining * 5.0;
+    const secondsRemaining = blocksRemaining * 6.0;
 
     return html`
       <div class="status-top">
@@ -198,7 +203,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
 
       <uprtcl-indicator class="vote-list-indicator" label="Votes">
         <uprtcl-list
-          >${votedYes.concat(votedNo).map(vote => {
+          >${votedYes.concat(votedNo).map((vote) => {
             let icon: string;
             switch (vote.value) {
               case VoteValue.Yes:
@@ -238,13 +243,17 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
           <div class="row">
             by
             <evees-author
-              user-id=${this.proposalManifest.creatorId ? this.proposalManifest.creatorId : ''}
+              user-id=${this.proposalManifest.creatorId
+                ? this.proposalManifest.creatorId
+                : ''}
               show-name
             ></evees-author>
           </div>
           <evees-update-diff .workspace=${this.workspace}> </evees-update-diff>
           <div class="column">
-            ${this.proposalStatusUI.isCouncilMember ? this.renderCouncilMember() : ''}
+            ${this.proposalStatusUI.isCouncilMember
+              ? this.renderCouncilMember()
+              : ''}
             ${this.renderProposalStatus()}
           </div>
         </div>
@@ -254,12 +263,12 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
-    const creatorId = this.proposalManifest.creatorId ? this.proposalManifest.creatorId : '';
+    const creatorId = this.proposalManifest.creatorId
+      ? this.proposalManifest.creatorId
+      : '';
     let icon;
 
     switch (this.proposalStatusUI.summary.status) {
