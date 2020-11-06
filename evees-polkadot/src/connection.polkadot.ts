@@ -2,7 +2,11 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Option } from '@polkadot/types';
 import { AddressOrPair, Signer } from '@polkadot/api/types';
 import { stringToHex } from '@polkadot/util';
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import {
+  decodeAddress,
+  encodeAddress,
+  encodeDerivedAddress,
+} from '@polkadot/util-crypto';
 import {
   web3Accounts,
   web3Enable,
@@ -25,6 +29,8 @@ const getIdentityInfo = (identity: Option<Registration>) => {
   }
   return {};
 };
+
+const UPRTCL_INDEX = 61880; // MAX 65535
 
 // Picks out the the cid parts from the users additional fields and assembles the final string
 const getCID = (info: IdentityInfo, keys: string[]): string | undefined => {
@@ -136,7 +142,8 @@ export class PolkadotConnection extends Connection {
     if (atBlock !== undefined) {
       this.logger.warn('cant get idenity at block yet... ups');
     }
-    const identityInfo = await this.getIdentityInfo(userId);
+    const derivedAccount = encodeDerivedAddress(userId, UPRTCL_INDEX, 42);
+    const identityInfo = await this.getIdentityInfo(derivedAccount);
     return getCID(<IdentityInfo>identityInfo, keys);
   }
 
@@ -182,7 +189,7 @@ export class PolkadotConnection extends Connection {
 
       if (!this.api) throw new Error('api undefined');
       const submitable = this.api.tx.utility.asDerivative(
-        'uprtcl',
+        UPRTCL_INDEX,
         setIdentity
       );
 
@@ -229,7 +236,7 @@ export class PolkadotConnection extends Connection {
     const blockHash = await this.api.rpc.chain.getBlockHash(at);
     const councilAddr = await this.api.query.council.members.at(blockHash);
     return councilAddr.map((address) =>
-      encodeAddress(decodeAddress(address), 42)
+      encodeDerivedAddress(address, UPRTCL_INDEX, 42)
     );
   }
 
