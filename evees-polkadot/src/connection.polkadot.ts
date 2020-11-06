@@ -1,7 +1,7 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Option } from '@polkadot/types';
 import { AddressOrPair, Signer } from '@polkadot/api/types';
-import { stringToHex } from '@polkadot/util';
+import { stringToHex, bnToBn } from '@polkadot/util';
 import {
   decodeAddress,
   encodeAddress,
@@ -31,6 +31,30 @@ const getIdentityInfo = (identity: Option<Registration>) => {
 };
 
 const UPRTCL_INDEX = 61880; // MAX 65535
+
+const signSendAndMine = (
+  submitable: any,
+  account: AddressOrPair,
+  api: ApiPromise
+): Promise<TransactionReceipt> => {
+  return new Promise(async (resolve, reject) => {
+    const unsub = await submitable.signAndSend(account, async (result) => {
+      if (result.status.isInBlock) {
+      } else if (result.status.isFinalized) {
+        if (unsub) unsub();
+        // TODO: resolve with the txHash and the blockNumber
+        const txHash = result.status.asFinalized.toHex(); // .toString() if string is needed
+        const blockData = await api.rpc.chain.getBlock(txHash);
+        if (blockData === undefined) throw new Error('blockData is undefined');
+
+        resolve({
+          txHash,
+          blockNumber: <number>blockData.block.header.number.toJSON(),
+        });
+      }
+    });
+  });
+};
 
 // Picks out the the cid parts from the users additional fields and assembles the final string
 const getCID = (info: IdentityInfo, keys: string[]): string | undefined => {
@@ -157,7 +181,14 @@ export class PolkadotConnection extends Connection {
     const cid1 = head !== undefined ? head.substring(0, 32) : '';
     const cid0 = head !== undefined ? head.substring(32, 64) : '';
 
-    const identityInfo = await this.getIdentityInfo(this.account);
+    const derivedAccount = encodeDerivedAddress(this.account, UPRTCL_INDEX, 42);
+    if (!this.api) throw new Error('api undefined');
+
+    this.logger.log(
+      `Using derived account ${derivedAccount} for current address ${this.account}`
+    );
+
+    const identityInfo = await this.getIdentityInfo(derivedAccount);
     const additional = identityInfo.additional ? identityInfo.additional : [];
 
     const currentIndexes = [
@@ -180,41 +211,41 @@ export class PolkadotConnection extends Connection {
       additional: [...additional],
     };
 
-    if (!this.api) throw new Error('api undefined');
+    /** check balance is enough, and if it's not, send the missing balance */
+    const derivedAccountInfo = await this.api.query.system.account(
+      derivedAccount
+    );
+    const amountToFreeze = this.api.consts.identity.basicDeposit.add(
+      this.api.consts.identity.fieldDeposit.mul(
+        bnToBn(newIdentity.additional.length)
+      )
+    );
+
+    if (derivedAccountInfo.data.reserved.lt(amountToFreeze)) {
+      const missing = amountToFreeze.sub(derivedAccountInfo.data.feeFrozen);
+      /** not enough balance free */
+      let r = confirm(
+        `Your Uprtcl derivative account \n\n${derivedAccount} \n\ndoes not have enougt balance. \n\nSend ${missing.div(
+          bnToBn('1000000000000')
+        )} KSM to it?`
+      );
+      if (!r) {
+        throw new Error('Not enough funds');
+      }
+      const txHash = await signSendAndMine(
+        this.api.tx.balances.transfer(derivedAccount, missing),
+        this.account,
+        this.api
+      );
+    }
+
     const setIdentity = this.api.tx.identity.setIdentity(newIdentity);
+    const submitable = this.api.tx.utility.asDerivative(
+      UPRTCL_INDEX,
+      setIdentity
+    );
 
-    return new Promise(async (resolve, reject) => {
-      if (setIdentity === undefined) reject();
-      if (this === undefined) reject();
-
-      if (!this.api) throw new Error('api undefined');
-      const submitable = this.api.tx.utility.asDerivative(
-        UPRTCL_INDEX,
-        setIdentity
-      );
-
-      const unsub = await submitable.signAndSend(
-        <AddressOrPair>this.account,
-        async (result) => {
-          if (result.status.isInBlock) {
-          } else if (result.status.isFinalized) {
-            if (unsub) unsub();
-            if (this.api === undefined) throw new Error('api is undefined');
-
-            // TODO: resolve with the txHash and the blockNumber
-            const txHash = result.status.asFinalized.toHex(); // .toString() if string is needed
-            const blockData = await this.api.rpc.chain.getBlock(txHash);
-            if (blockData === undefined)
-              throw new Error('blockData is undefined');
-
-            resolve({
-              txHash,
-              blockNumber: <number>blockData.block.header.number.toJSON(),
-            });
-          }
-        }
-      );
-    });
+    return signSendAndMine(submitable, this.account, this.api);
   }
 
   public async signText(messageText): Promise<string> {
@@ -236,7 +267,7 @@ export class PolkadotConnection extends Connection {
     const blockHash = await this.api.rpc.chain.getBlockHash(at);
     const councilAddr = await this.api.query.council.members.at(blockHash);
     return councilAddr.map((address) =>
-      encodeDerivedAddress(address, UPRTCL_INDEX, 42)
+      encodeAddress(decodeAddress(address), 42)
     );
   }
 
