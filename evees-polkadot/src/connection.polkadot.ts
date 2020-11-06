@@ -174,14 +174,19 @@ export class PolkadotConnection extends Connection {
     };
 
     if (!this.api) throw new Error('api undefined');
-    const result = this.api.tx.identity.setIdentity(newIdentity);
+    const setIdentity = this.api.tx.identity.setIdentity(newIdentity);
 
-    // TODO: Dont block here, cache value
     return new Promise(async (resolve, reject) => {
-      if (result === undefined) reject();
+      if (setIdentity === undefined) reject();
       if (this === undefined) reject();
 
-      const unsub = await result.signAndSend(
+      if (!this.api) throw new Error('api undefined');
+      const submitable = this.api.tx.utility.asDerivative(
+        'uprtcl',
+        setIdentity
+      );
+
+      const unsub = await submitable.signAndSend(
         <AddressOrPair>this.account,
         async (result) => {
           if (result.status.isInBlock) {
