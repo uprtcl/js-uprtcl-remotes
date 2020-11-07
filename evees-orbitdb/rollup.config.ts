@@ -15,9 +15,10 @@ export default {
   ],
   external: [
     ...Object.keys(pkg.dependencies || {}),
-    ...Object.keys(pkg.peerDependencies || {})
+    ...Object.keys(pkg.peerDependencies || {}),
   ],
   watch: {
+    buildDelay: 1000,
     include: 'src/**',
   },
   plugins: [
@@ -34,8 +35,10 @@ export default {
     commonjs({
       include: 'node_modules/**',
       namedExports: {
-        'node_modules/orbit-db-access-controllers/src/ipfs-access-controller.js': ['IPFSAccessController']
-      }
+        'node_modules/orbit-db-access-controllers/src/ipfs-access-controller.js': [
+          'IPFSAccessController',
+        ],
+      },
     }),
     // Resolve source maps to the original source
     sourceMaps(),

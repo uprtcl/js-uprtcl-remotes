@@ -6,6 +6,7 @@ export interface BlockchainConnection {
   connection: any;
   account?: string | undefined;
   icon?(): TemplateResult;
+  avatar?(userId: string, config: any): TemplateResult;
   getNetworkId(): string;
   getLatestBlock(): Promise<number>;
   getHead(userId: string, block?: number): Promise<string | undefined>;

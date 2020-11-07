@@ -14,9 +14,10 @@ export default {
   ],
   external: [
     ...Object.keys(pkg.dependencies || {}),
-    ...Object.keys(pkg.peerDependencies || {})
+    ...Object.keys(pkg.peerDependencies || {}),
   ],
   watch: {
+    buildDelay: 1000,
     include: 'src/**',
   },
   plugins: [
