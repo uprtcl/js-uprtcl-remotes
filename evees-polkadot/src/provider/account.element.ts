@@ -2,13 +2,15 @@ import { LitElement, html, css, property, internalProperty } from 'lit-element';
 import { unsafeSVG } from 'lit-html/directives/unsafe-svg';
 import { polkadotIcon } from '@polkadot/ui-shared';
 
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { EveesModule, EveesRemote } from '@uprtcl/evees';
 import { EveesBlockchainCached } from '@uprtcl/evees-blockchain';
 
 import { PolkadotConnection } from '../connection.polkadot';
 
 export class PolkadotAccountElement extends moduleConnect(LitElement) {
+  logger = new Logger('POLKADOT-ACCOUNT-ELEMENT');
+
   @property({ type: String })
   account!: string;
 
@@ -21,7 +23,7 @@ export class PolkadotAccountElement extends moduleConnect(LitElement) {
   @internalProperty()
   loading: boolean = true;
 
-  @internalProperty()
+  @property({ attribute: false })
   displayName!: string;
 
   connection!: PolkadotConnection;
@@ -40,7 +42,7 @@ export class PolkadotAccountElement extends moduleConnect(LitElement) {
     this.load();
   }
 
-  udpated(changedProperties) {
+  updated(changedProperties) {
     if (changedProperties.has('account')) {
       this.load();
     }
@@ -48,13 +50,19 @@ export class PolkadotAccountElement extends moduleConnect(LitElement) {
 
   async load() {
     this.loading = true;
-    this.identity = undefined;
 
-    this.identity = await this.connection.getIdentityInfo(this.account);
+    const identity = this.connection.identitiesCache[this.account]
+      ? this.connection.identitiesCache[this.account]
+      : await this.connection.getIdentityInfo(this.account);
+    this.connection.identitiesCache[this.account] = identity;
+
+    this.identity = { ...identity };
+
     this.displayName =
       this.identity && this.identity.display && this.identity.display.Raw
         ? this.identity.display.Raw
         : `${this.account.substr(0, 20)}...`;
+
     this.loading = false;
   }
 
