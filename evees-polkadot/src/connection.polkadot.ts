@@ -85,6 +85,8 @@ export class PolkadotConnection extends Connection {
   private chain?: string;
   private signer?: Signer;
   public connectionDetails: ConnectionDetails;
+  private useDerivative: boolean = false;
+  public identitiesCache: { [account: string]: any } = {};
 
   logger = new Logger('Polkadot-Connection');
 
@@ -94,6 +96,11 @@ export class PolkadotConnection extends Connection {
     options?: ConnectionOptions
   ) {
     super(options);
+    if (connections[connectionName] === undefined) {
+      throw new Error(
+        `connection details for connection id '${connectionName}' not found`
+      );
+    }
     this.connectionDetails = connections[connectionName];
   }
 
@@ -103,6 +110,7 @@ export class PolkadotConnection extends Connection {
     const wsProvider = new WsProvider(this.connectionDetails.endpoint);
     this.api = await ApiPromise.create({ provider: wsProvider });
     this.chain = (await this.api.rpc.system.chain()).toString();
+    this.useDerivative = this.api.tx.utility.asDerivative !== undefined;
 
     this.logger.log('Connected', {
       api: this.api,
@@ -166,7 +174,9 @@ export class PolkadotConnection extends Connection {
     if (atBlock !== undefined) {
       this.logger.warn('cant get idenity at block yet... ups');
     }
-    const derivedAccount = encodeDerivedAddress(userId, UPRTCL_INDEX, 42);
+    const derivedAccount = this.useDerivative
+      ? encodeDerivedAddress(userId, UPRTCL_INDEX, 42)
+      : userId;
     const identityInfo = await this.getIdentityInfo(derivedAccount);
     return getCID(<IdentityInfo>identityInfo, keys);
   }
@@ -181,7 +191,9 @@ export class PolkadotConnection extends Connection {
     const cid1 = head !== undefined ? head.substring(0, 32) : '';
     const cid0 = head !== undefined ? head.substring(32, 64) : '';
 
-    const derivedAccount = encodeDerivedAddress(this.account, UPRTCL_INDEX, 42);
+    const derivedAccount = this.useDerivative
+      ? encodeDerivedAddress(this.account, UPRTCL_INDEX, 42)
+      : this.account;
     if (!this.api) throw new Error('api undefined');
 
     this.logger.log(
@@ -225,7 +237,7 @@ export class PolkadotConnection extends Connection {
       const missing = amountToFreeze.sub(derivedAccountInfo.data.feeFrozen);
       /** not enough balance free */
       let r = confirm(
-        `Your Uprtcl derivative account \n\n${derivedAccount} \n\ndoes not have enougt balance. \n\nSend ${missing.div(
+        `Your Uprtcl account \n\n${derivedAccount} \n\ndoes not have enough balance. \n\nSend ${missing.div(
           bnToBn('1000000000000')
         )} KSM to it?`
       );
@@ -240,10 +252,9 @@ export class PolkadotConnection extends Connection {
     }
 
     const setIdentity = this.api.tx.identity.setIdentity(newIdentity);
-    const submitable = this.api.tx.utility.asDerivative(
-      UPRTCL_INDEX,
-      setIdentity
-    );
+    const submitable = this.useDerivative
+      ? this.api.tx.utility.asDerivative(UPRTCL_INDEX, setIdentity)
+      : setIdentity;
 
     return signSendAndMine(submitable, this.account, this.api);
   }
