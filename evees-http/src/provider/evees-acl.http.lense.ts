@@ -10,7 +10,7 @@ import {
   BasicAdminInheritedPermissions,
   BasicAdminPermissions,
   PermissionType,
-  UserPermissions
+  UserPermissions,
 } from './types';
 import { EveesHttp } from './evees.http';
 
@@ -52,16 +52,19 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   userList: string[] = [
     'google-oauth2|102538849128130956176',
     'google-oauth2|101944349925589295194',
-    'google-oauth2|108882209031762642189'
+    'google-oauth2|108882209031762642189',
   ];
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
-    const remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.uref);
-
-    const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-      remote => remote.id === remoteId
+    const remoteId = await EveesHelpers.getPerspectiveRemoteId(
+      this.client,
+      this.uref
     );
+
+    const remote = (this.requestAll(
+      EveesBindings.EveesRemote
+    ) as EveesRemote[]).find((remote) => remote.id === remoteId);
 
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
@@ -101,10 +104,13 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     const delegatedUref = this.permissions.delegateTo;
 
-    const data = await EveesHelpers.getPerspectiveData(this.client, delegatedUref);
+    const data = await EveesHelpers.getPerspectiveData(
+      this.client,
+      delegatedUref
+    );
     const hasTitle: HasTitle = this.recognizer
       .recognizeBehaviours(data)
-      .find(b => (b as HasTitle).title);
+      .find((b) => (b as HasTitle).title);
 
     const title = hasTitle.title(data);
 
@@ -118,7 +124,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     // TODO: get correct users
     const { canAdmin } = this.permissions.effectivePermissions;
-    return this.userList.filter(user => canAdmin[0] !== user);
+    return this.userList.filter((user) => canAdmin[0] !== user);
   }
 
   getUserPermissionList() {
@@ -126,24 +132,28 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       throw new Error(`permissions not found`);
     }
 
-    const { canAdmin, canWrite, canRead } = this.permissions.effectivePermissions;
+    const {
+      canAdmin,
+      canWrite,
+      canRead,
+    } = this.permissions.effectivePermissions;
     let userPermissions: any[] = [];
 
     userPermissions = userPermissions.concat(
       canAdmin
         .filter((_, adminIndex) => adminIndex !== 0)
-        .map(admin => ({ userId: admin, permission: PermissionType.Admin }))
+        .map((admin) => ({ userId: admin, permission: PermissionType.Admin }))
     );
 
     userPermissions = userPermissions.concat(
-      canWrite.map(write => ({
+      canWrite.map((write) => ({
         userId: write,
-        permission: PermissionType.Write
+        permission: PermissionType.Write,
       }))
     );
 
     userPermissions = userPermissions.concat(
-      canRead.map(read => ({ userId: read, permission: PermissionType.Read }))
+      canRead.map((read) => ({ userId: read, permission: PermissionType.Read }))
     );
 
     return userPermissions;
@@ -244,7 +254,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     if (
       selectedUserId &&
       !this.getUserPermissionList().some(
-        userPermissions => userPermissions.userId === selectedUserId
+        (userPermissions) => userPermissions.userId === selectedUserId
       )
     ) {
       await this.remote.accessControl.setPrivatePermissions(
@@ -268,7 +278,11 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     const selectedRole = role;
 
-    await this.remote.accessControl.setPrivatePermissions(this.uref, selectedRole, userId);
+    await this.remote.accessControl.setPrivatePermissions(
+      this.uref,
+      selectedRole,
+      userId
+    );
 
     this.loadPermissions();
   }
@@ -294,6 +308,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       <evees-author
         show-name
         user-id=${this.permissions.effectivePermissions.canAdmin[0]}
+        remote-id=${this.remote.id}
       ></evees-author>
     `;
   }
@@ -301,33 +316,36 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   renderUserPermissionList() {
     const permissionListConfig = {};
 
-    Object.values(PermissionType).forEach(permission => {
+    Object.values(PermissionType).forEach((permission) => {
       permissionListConfig[permission] = {
         disabled: false,
         graphic: '',
-        text: permission
+        text: permission,
       };
     });
 
     return html`
       ${this.getUserPermissionList().map(
-        userPermission => html`
+        (userPermission) => html`
           <div class="row flex-center">
-            <evees-author user-id=${userPermission.userId}></evees-author>
+            <evees-author
+              user-id=${userPermission.userId}
+              remote-id=${this.remote.id}
+            ></evees-author>
 
             ${this.permissions && !this.permissions.delegate
               ? html`
                   <uprtcl-options-menu
-                    @option-click=${event =>
+                    @option-click=${(event) =>
                       this.changeRole(userPermission.userId, event.detail.key)}
                     .config=${permissionListConfig}
                   >
-                    <span class="user-permission" slot="icon">${userPermission.permission}</span>
+                    <span class="user-permission" slot="icon"
+                      >${userPermission.permission}</span
+                    >
                   </uprtcl-options-menu>
                 `
-              : html`
-                  <span>${userPermission.permission}</span>
-                `}
+              : html` <span>${userPermission.permission}</span> `}
             ${this.permissions && !this.permissions.delegate
               ? html`
                   <uprtcl-button
@@ -345,17 +363,24 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   renderAddUserPermission() {
     const userListConfig = {};
 
-    this.getUserList().forEach(user => {
+    this.getUserList().forEach((user) => {
       userListConfig[user] = {
         disabled: false,
         graphic: '',
-        text: user
+        text: user,
       };
     });
 
     return html`
-      <uprtcl-options-menu @option-click=${this.addRole} .config=${userListConfig}>
-        <uprtcl-textfield class="user-search" slot="icon" label="Search users"></uprtcl-textfield>
+      <uprtcl-options-menu
+        @option-click=${this.addRole}
+        .config=${userListConfig}
+      >
+        <uprtcl-textfield
+          class="user-search"
+          slot="icon"
+          label="Search users"
+        ></uprtcl-textfield>
       </uprtcl-options-menu>
     `;
   }
@@ -363,7 +388,9 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   renderChangeDelegate() {
     if (!this.permissions) return;
     return html`
-      <uprtcl-toggle @toggle-click=${this.toggleDelegate} .active=${this.permissions.delegate}
+      <uprtcl-toggle
+        @toggle-click=${this.toggleDelegate}
+        .active=${this.permissions.delegate}
         >Delegate</uprtcl-toggle
       >
     `;
@@ -371,9 +398,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   render() {
     return this.loading
-      ? html`
-          <uprtcl-loading></uprtcl-loading>
-        `
+      ? html` <uprtcl-loading></uprtcl-loading> `
       : html`
           <div class="container">
             ${this.permissions
@@ -423,9 +448,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
                   <!-- ${!this.permissions.delegate
                     ? html`
-                        <div class="row">
-                          ${this.renderAddUserPermission()}
-                        </div>
+                        <div class="row">${this.renderAddUserPermission()}</div>
                       `
                     : ''} -->
                 `

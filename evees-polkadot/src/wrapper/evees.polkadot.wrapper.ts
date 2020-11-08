@@ -15,7 +15,7 @@ import { EveesRemote } from '@uprtcl/evees';
 
 import { PolkadotConnection } from '../connection.polkadot';
 import { PolkadotOrbitDBIdentity } from '../orbitdb/polkadot.orbitdb.identity';
-import { EveesPolkadotConnection } from '../provider/identity-based/evees.polkadot-identity';
+import { EveesPolkadotConnection } from '../provider/identity-based/evees.polkadot-connection';
 import { EveesPolkadotCouncil } from '../provider/council/evees.polkadot-council';
 
 import { getConnectionDetails } from './connections';

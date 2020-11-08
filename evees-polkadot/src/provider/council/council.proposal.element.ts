@@ -224,7 +224,11 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
             return html`
               <uprtcl-list-item
                 ><uprtcl-icon-button icon=${icon} button></uprtcl-icon-button
-                ><evees-author user-id=${vote.member} show-name></evees-author
+                ><evees-author
+                  user-id=${vote.member}
+                  remote-id=${this.remote.id}
+                  show-name
+                ></evees-author
               ></uprtcl-list-item>
             `;
           })}</uprtcl-list
@@ -246,6 +250,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
               user-id=${this.proposalManifest.creatorId
                 ? this.proposalManifest.creatorId
                 : ''}
+              remote-id=${this.remote.id}
               show-name
             ></evees-author>
           </div>
@@ -286,7 +291,11 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     return html`
       <div @click=${() => this.showProposalDetails()} class="row-container">
         <div class="proposal-name">
-          <evees-author user-id=${creatorId} show-name></evees-author>
+          <evees-author
+            user-id=${creatorId}
+            remote-id=${this.remote.id}
+            show-name
+          ></evees-author>
         </div>
         <div class="proposal-state">
           <uprtcl-icon-button icon=${icon}></uprtcl-icon-button>

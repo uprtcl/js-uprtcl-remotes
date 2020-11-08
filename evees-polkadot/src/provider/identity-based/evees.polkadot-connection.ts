@@ -44,13 +44,24 @@ export class EveesPolkadotConnection implements BlockchainConnection {
         iconName = 'kusama';
     }
     return html`
-      <div style="display:flex;align-items: center;color: #636668;font-weight:bold">
-        <div style="height: 32px;width: 32px;margin-right: 6px;border-radius:16px;overflow:hidden;">
+      <div
+        style="display:flex;align-items: center;color: #636668;font-weight:bold"
+      >
+        <div
+          style="height: 32px;width: 32px;margin-right: 6px;border-radius:16px;overflow:hidden;"
+        >
           ${icons[iconName]}
         </div>
         ${name} Identity
       </div>
     `;
+  }
+  avatar(userId: string, config: any = { showName: true }) {
+    return html`<polkadot-account
+      account=${userId}
+      ?show-name=${config.showName}
+    >
+    </polkadot-account> `;
   }
   async getLatestBlock() {
     return this.connection.getLatestBlock();
