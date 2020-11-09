@@ -3,6 +3,8 @@ import { ApolloClient } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
+import { prettyTimePeriod } from '@uprtcl/common-ui';
+
 import {
   EveesBindings,
   EveesRemote,
@@ -12,9 +14,10 @@ import {
   Secured,
 } from '@uprtcl/evees';
 
-import { ProposalManifest, ProposalSummary, Vote } from './types';
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
+
+import { ProposalManifest, ProposalSummary, Vote } from './types';
 import { ProposalStatus, VoteValue } from './proposal.config.types';
 
 export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
@@ -31,7 +34,9 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   voting: boolean = false;
 
   client!: ApolloClient<any>;
+  remotes!: EveesRemote[];
   remote!: EveesPolkadotCouncil;
+  fromPerspective!: Signed<Perspective>;
 
   recognizer!: PatternRecognizer;
   workspace!: EveesWorkspace;
@@ -46,10 +51,8 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
-    const remote = (this.requestAll(
-      EveesBindings.EveesRemote
-    ) as EveesRemote[]).find((remote) => remote.id.includes('council'));
-
+    this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
+    const remote = this.remotes.find((remote) => remote.id.includes('council'));
     if (!remote) throw new Error(`council remote not registered`);
     this.remote = (remote as unknown) as EveesPolkadotCouncil;
     this.load();
@@ -69,6 +72,10 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     )) as ProposalManifest;
     if (!proposalManifest) throw new Error('Proposal not found');
     this.proposalManifest = proposalManifest;
+
+    this.fromPerspective = (await this.remote.store.get(
+      this.proposalManifest.fromPerspectiveId
+    )) as Signed<Perspective>;
   }
 
   async loadWorkspace() {
@@ -188,7 +195,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
         ${secondsRemaining > 0
           ? html`
               <uprtcl-indicator label="Remaining time"
-                >${secondsRemaining} seconds left</uprtcl-indicator
+                >${prettyTimePeriod(secondsRemaining)}</uprtcl-indicator
               >
             `
           : html`
@@ -250,7 +257,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
               user-id=${this.proposalManifest.creatorId
                 ? this.proposalManifest.creatorId
                 : ''}
-              remote-id=${this.remote.id}
+              remote-id=${this.fromPerspective.payload.remote}
               show-name
             ></evees-author>
           </div>
@@ -293,7 +300,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
         <div class="proposal-name">
           <evees-author
             user-id=${creatorId}
-            remote-id=${this.remote.id}
+            remote-id=${this.fromPerspective.payload.remote}
             show-name
           ></evees-author>
         </div>
