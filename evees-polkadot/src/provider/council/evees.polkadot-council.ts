@@ -11,7 +11,7 @@ import {
   Secured,
   deriveSecured,
   hashObject,
-  EveesHelpers
+  EveesHelpers,
 } from '@uprtcl/evees';
 import { EveesAccessControlFixed } from '@uprtcl/evees-blockchain';
 
@@ -37,8 +37,17 @@ export class EveesPolkadotCouncil implements EveesRemote {
     public config: ProposalConfig
   ) {
     this.accessControl = new EveesAccessControlFixed(store);
-    this.councilStorage = new PolkadotCouncilEveesStorage(connection, store, config);
-    this.proposals = new ProposalsPolkadotCouncil(connection, this.councilStorage, store, config);
+    this.councilStorage = new PolkadotCouncilEveesStorage(
+      connection,
+      store,
+      config
+    );
+    this.proposals = new ProposalsPolkadotCouncil(
+      connection,
+      this.councilStorage,
+      store,
+      config
+    );
   }
 
   get id() {
@@ -55,7 +64,10 @@ export class EveesPolkadotCouncil implements EveesRemote {
 
   async getHome(userId?: string) {
     /** this remote can only store perspectives of the council */
-    return EveesHelpers.getHome(this, `${this.connection.getNetworkId()}-council`);
+    return EveesHelpers.getHome(
+      this,
+      `${this.connection.getNetworkId()}-council`
+    );
   }
 
   icon() {
@@ -72,13 +84,29 @@ export class EveesPolkadotCouncil implements EveesRemote {
         iconName = 'kusama';
     }
     return html`
-      <div style="display:flex;align-items: center;color: #636668;font-weight:bold">
-        <div style="height: 32px;width: 32px;margin-right: 6px;border-radius:16px;overflow:hidden;">
+      <div
+        style="display:flex;align-items: center;color: #636668;font-weight:bold"
+      >
+        <div
+          style="height: 32px;width: 32px;margin-right: 6px;border-radius:16px;overflow:hidden;"
+        >
           ${icons[iconName]}
         </div>
         ${name} Council
       </div>
     `;
+  }
+
+  avatar(userId: string, config: any = { showName: true }) {
+    if (!config.showName) {
+      return html``;
+    }
+
+    return html` <div
+      style="display:flex;align-items: center;color: #636668;font-weight:bold"
+    >
+      Council
+    </div>`;
   }
 
   async ready(): Promise<void> {
@@ -91,7 +119,9 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   async updatePerspective(perspectiveId: string, details: PerspectiveDetails) {
-    throw new Error('cant create perspective directly. Need to create a proposal.');
+    throw new Error(
+      'cant create perspective directly. Need to create a proposal.'
+    );
   }
 
   async snapPerspective(
@@ -108,7 +138,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
 
     const defaultContext = await hashObject({
       creatorId,
-      timestamp
+      timestamp,
     });
 
     context = context || defaultContext;
@@ -118,13 +148,16 @@ export class EveesPolkadotCouncil implements EveesRemote {
       remote: this.id,
       path: path !== undefined ? path : this.defaultPath,
       timestamp,
-      context
+      context,
     };
 
     if (fromPerspectiveId) object.fromPerspectiveId = fromPerspectiveId;
     if (fromHeadId) object.fromHeadId = fromHeadId;
 
-    const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
+    const perspective = await deriveSecured<Perspective>(
+      object,
+      this.store.cidConfig
+    );
 
     perspective.casID = this.store.casID;
 
@@ -132,15 +165,23 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    throw new Error('cant create perspective directly. Need to create a proposal.');
+    throw new Error(
+      'cant create perspective directly. Need to create a proposal.'
+    );
   }
 
-  async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
-    throw new Error('cant create perspective directly. Need to create a proposal.');
+  async createPerspectiveBatch(
+    newPerspectivesData: NewPerspectiveData[]
+  ): Promise<void> {
+    throw new Error(
+      'cant create perspective directly. Need to create a proposal.'
+    );
   }
 
   async getContextPerspectives(context: string): Promise<string[]> {
-    const perspectives = await this.councilStorage.getContextPerspectives(context);
+    const perspectives = await this.councilStorage.getContextPerspectives(
+      context
+    );
     if (context === `${this.connection.getNetworkId()}-council.home`) {
       const home = await this.getHome();
       perspectives.push(home.id);

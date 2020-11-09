@@ -60,7 +60,9 @@ export class PolkadotAccountElement extends moduleConnect(LitElement) {
 
     this.displayName =
       this.identity && this.identity.display && this.identity.display.Raw
-        ? this.identity.display.Raw
+        ? this.identity.display.Raw.length > 23
+          ? `${this.identity.display.Raw.substr(0, 20)}...`
+          : this.identity.display.Raw
         : `${this.account.substr(0, 20)}...`;
 
     this.loading = false;
