@@ -373,6 +373,7 @@ export class EveesBlockchainCached implements EveesRemote {
 
     /** create the context stores for the new perspectives */
     const newPerspectives = await this.cache.newPerspectives.toArray();
+    const deletedPerspectivesIds = await this.cache.deletePerspectives.toArray();
 
     this.logger.info('updating context stores');
     await Promise.all(
@@ -396,6 +397,26 @@ export class EveesBlockchainCached implements EveesRemote {
         return Promise.all([proposalP, contextP]);
       })
     );
+    await Promise.all(
+      deletedPerspectivesIds.map(async (perspectiveId) => {
+        /** create and pin context stores */
+        const perspective = (await this.store.get(perspectiveId)) as Signed<
+          Perspective
+        >;
+        const contextStore = await this.orbitdbcustom.getStore(
+          EveesOrbitDBEntities.Context,
+          {
+            context: perspective.payload.context,
+          }
+        );
+
+        this.logger.info(`contextStore.delete(${perspectiveId})`);
+        const contextP = contextStore.delete(perspectiveId);
+
+        return contextP;
+      })
+    );
+
     this.logger.info('updating context stores - done');
 
     return this.updateHead(newHash);
