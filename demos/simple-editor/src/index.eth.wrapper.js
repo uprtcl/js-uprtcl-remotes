@@ -1,9 +1,11 @@
 import IPFS from 'ipfs';
-import { env } from '../env';
-import { EthereumWrapper } from '@uprtcl/evees-ethereum';
+
 import { EveesModule } from '@uprtcl/evees';
 import { DocumentsModule } from '@uprtcl/documents';
 import { WikisModule } from '@uprtcl/wikis';
+import { EveesBlockchainModule } from '@uprtcl/evees-blockchain';
+import { EveesOrbitDBModule } from '@uprtcl/evees-orbitdb';
+import { EveesEthereumWrapper } from '@uprtcl/evees-ethereum';
 
 import {
   MicroOrchestrator,
@@ -15,6 +17,7 @@ import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
 
 import { SimpleWiki } from './simple-wiki';
+import { env } from '../env';
 
 (async function () {
   const ipfsJSConfig = {
@@ -34,7 +37,13 @@ import { SimpleWiki } from './simple-wiki';
 
   const ipfs = await IPFS.create(ipfsJSConfig);
 
-  const wrapper = new EthereumWrapper(ipfs);
+  const wrapper = new EveesEthereumWrapper(
+    ipfs,
+    env.ethers.provider,
+    env.pinner
+  );
+  await wrapper.load();
+
   const evees = new EveesModule(wrapper.remotes);
 
   const documents = new DocumentsModule();
@@ -44,7 +53,7 @@ import { SimpleWiki } from './simple-wiki';
     new i18nextBaseModule(),
     new ApolloClientModule(),
     new CortexModule(),
-    new DiscoveryModule([orbitdbEvees.casID]),
+    new DiscoveryModule([wrapper.remotes[0].store.casID]),
     new LensesModule(),
     new EveesBlockchainModule(),
     new EveesOrbitDBModule(),
@@ -54,11 +63,6 @@ import { SimpleWiki } from './simple-wiki';
   ];
 
   await orchestrator.loadModules(modules);
-
-  /*** add other services to the container */
-  orchestrator.container
-    .bind('official-connection')
-    .toConstantValue(ethConnection);
 
   console.log(orchestrator);
   customElements.define('simple-wiki', SimpleWiki);
