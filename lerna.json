@@ -1,4 +1,11 @@
 {
-  "packages": ["evees-ethereum", "demos/simple-editor"],
-  "version": "0.1.0-beta.14"
+  "packages": [
+    "evees-blockchain",
+    "evees-ethereum",
+    "evees-http",
+    "evees-local",
+    "evees-orbitdb",
+    "evees-polkadot"
+  ],
+  "version": "independent"
 }
