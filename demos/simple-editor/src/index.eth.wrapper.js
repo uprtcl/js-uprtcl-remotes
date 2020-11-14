@@ -5,7 +5,10 @@ import { DocumentsModule } from '@uprtcl/documents';
 import { WikisModule } from '@uprtcl/wikis';
 import { EveesBlockchainModule } from '@uprtcl/evees-blockchain';
 import { EveesOrbitDBModule } from '@uprtcl/evees-orbitdb';
-import { EveesEthereumWrapper } from '@uprtcl/evees-ethereum';
+import {
+  EveesEthereumWrapper,
+  EveesEthereumModule,
+} from '@uprtcl/evees-ethereum';
 
 import {
   MicroOrchestrator,
@@ -57,6 +60,7 @@ import { env } from '../env';
     new LensesModule(),
     new EveesBlockchainModule(),
     new EveesOrbitDBModule(),
+    new EveesEthereumModule(),
     evees,
     documents,
     wikis,
