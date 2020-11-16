@@ -1,3 +1,5 @@
+import { html } from 'lit-html';
+
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { KnownSourcesHttp, HttpProvider } from '@uprtcl/http-provider';
 import { KnownSourcesService, CASStore } from '@uprtcl/multiplatform';
@@ -8,8 +10,7 @@ import {
   NewPerspectiveData,
   Perspective,
   Secured,
-  deriveSecured,
-  EveesHelpers
+  EveesHelpers,
 } from '@uprtcl/evees';
 
 import { EveesAccessControlHttp } from './evees-acl.http';
@@ -80,12 +81,14 @@ export class EveesHttp implements EveesRemote {
     await this.provider.post('/persp', {
       perspective: perspectiveData.perspective,
       details: perspectiveData.details,
-      parentId: perspectiveData.parentId
+      parentId: perspectiveData.parentId,
     });
   }
 
-  async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
-    const promises = newPerspectivesData.map(perspectiveData =>
+  async createPerspectiveBatch(
+    newPerspectivesData: NewPerspectiveData[]
+  ): Promise<void> {
+    const promises = newPerspectivesData.map((perspectiveData) =>
       this.createPerspective(perspectiveData)
     );
     await Promise.all(promises);
@@ -103,14 +106,16 @@ export class EveesHttp implements EveesRemote {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    let responseObj:any = {};
-    try {      
-      responseObj = await this.provider.getObject<PerspectiveDetails>(`/persp/${perspectiveId}/details`);      
-    } catch(e) {
+    let responseObj: any = {};
+    try {
+      responseObj = await this.provider.getObject<PerspectiveDetails>(
+        `/persp/${perspectiveId}/details`
+      );
+    } catch (e) {
       responseObj = {
-        headId: undefined
-      }
-    }    
+        headId: undefined,
+      };
+    }
 
     return responseObj;
   }
@@ -136,5 +141,25 @@ export class EveesHttp implements EveesRemote {
   }
   logout() {
     return this.provider.logout();
+  }
+  icon(path?: string) {
+    if (path) {
+      const url = new URL(path);
+      path = url.hostname;
+    }
+    return html`
+      <uprtcl-icon-and-name
+        name=${path ? path : 'unknown'}
+        show-name
+      ></uprtcl-icon-and-name>
+    `;
+  }
+  avatar(userId: string, config: any = { showName: true }) {
+    return html`
+      <uprtcl-icon-and-name
+        ?show-name=${config.showName}
+        name=${userId}
+      ></uprtcl-icon-and-name>
+    `;
   }
 }

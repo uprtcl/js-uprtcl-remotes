@@ -4,6 +4,7 @@
   "description": "EveesRemote implemented on the Ethereum Blockchain",
   "homepage": "https://uprtcl.io",
   "scripts": {
+    "upgrade-uprtcl": "npm i @uprtcl/evees@latest @uprtcl/cortex@latest @uprtcl/micro-orchestrator@latest @uprtcl/multiplatform@latest @uprtcl/lenses@latest @uprtcl/graphql@latest @uprtcl/ethereum-provider@latest @uprtcl/http-provider@latest",
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.ts",
     "build": "npm run clean && rollup -c rollup.config.ts",
@@ -11,15 +12,16 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.1.0-beta.4",
+    "@uprtcl/cortex": "0.1.0-beta.4",
     "@uprtcl/ethereum-provider": "0.1.0-beta.6",
-    "@uprtcl/evees": "^0.1.0-beta.7",
-    "@uprtcl/graphql": "^0.1.0-beta.4",
-    "@uprtcl/http-provider": "^0.1.0-beta.5",
-    "@uprtcl/lenses": "^0.1.0-beta.4",
-    "@uprtcl/micro-orchestrator": "^0.1.0-beta.4",
-    "@uprtcl/multiplatform": "^0.1.0-beta.4",
-    "apollo-boost": "^0.4.7"
+    "@uprtcl/evees": "0.1.0-beta.8",
+    "@uprtcl/graphql": "0.1.0-beta.4",
+    "@uprtcl/http-provider": "0.1.0-beta.6",
+    "@uprtcl/lenses": "0.1.0-beta.4",
+    "@uprtcl/micro-orchestrator": "0.1.0-beta.4",
+    "@uprtcl/multiplatform": "0.1.0-beta.4",
+    "apollo-boost": "^0.4.7",
+    "lit-html": "^1.1.2"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",

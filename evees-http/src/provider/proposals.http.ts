@@ -1,5 +1,5 @@
 import { ProposalDetails, ProposalsProvider } from '@uprtcl/evees';
-import { Proposal, NewProposal } from '@uprtcl/evees/src/types';
+import { Proposal, NewProposal } from '@uprtcl/evees';
 import { HttpProvider } from '@uprtcl/http-provider';
 import { EveesHttp } from './evees.http';
 
@@ -21,23 +21,29 @@ export class ProposalsHttp implements ProposalsProvider {
   }
 
   async getProposal(proposalId: string): Promise<Proposal> {
-    const proposal = await this.provider.getObject<Proposal>(`/proposal/${proposalId}`);
+    const proposal = await this.provider.getObject<Proposal>(
+      `/proposal/${proposalId}`
+    );
     /** inject the casID of the remote store */
-    proposal.details.newPerspectives = proposal.details.newPerspectives.map(newPerspective => {
-      return {
-        ...newPerspective,
-        perspective: {
-          ...newPerspective.perspective,
-          casID: this.evees.store.casID
-        }
-      };
-    });
+    proposal.details.newPerspectives = proposal.details.newPerspectives.map(
+      (newPerspective) => {
+        return {
+          ...newPerspective,
+          perspective: {
+            ...newPerspective.perspective,
+            casID: this.evees.store.casID,
+          },
+        };
+      }
+    );
 
     return proposal;
   }
 
   async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
-    return this.provider.getObject<string[]>(`/persp/${perspectiveId}/proposals`);
+    return this.provider.getObject<string[]>(
+      `/persp/${perspectiveId}/proposals`
+    );
   }
 
   updateProposal(proposalId: string, details: ProposalDetails): Promise<void> {

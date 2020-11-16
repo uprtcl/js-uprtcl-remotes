@@ -1,3 +1,5 @@
+import { html, TemplateResult } from 'lit-html';
+
 import { Logger } from '@uprtcl/micro-orchestrator';
 import {
   EthereumConnection,
@@ -17,7 +19,6 @@ const ZERO_HEX_32 = '0x' + new Array(64).fill(0).join('');
 
 import { UPDATED_HEAD } from './common';
 import { icons } from './icons';
-import { html, TemplateResult } from 'lit-html';
 
 export class EveesEthereumConnection implements BlockchainConnection {
   logger: Logger = new Logger('EveesEthereum');
