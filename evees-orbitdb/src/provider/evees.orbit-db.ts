@@ -85,6 +85,14 @@ export class EveesOrbitDB implements EveesRemote {
     `;
   }
 
+  avatar(userId: string, config: any = { showName: true }) {
+    return html`<orbitdb-profile
+      address=${userId}
+      ?show-name=${config.showName}
+    >
+    </orbitdb-profile> `;
+  }
+
   lense(): Lens {
     return {
       name: 'evees-orbitb:remote',
