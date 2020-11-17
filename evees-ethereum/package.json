@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-ethereum",
-  "version": "0.1.0-beta.17",
+  "version": "0.1.0-beta.18",
   "description": "EveesRemote implemented on the Ethereum Blockchain",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -16,8 +16,8 @@
     "@uprtcl/cortex": "^0.1.0-beta.4",
     "@uprtcl/ethereum-provider": "0.1.0-beta.6",
     "@uprtcl/evees": "^0.1.0-beta.8",
-    "@uprtcl/evees-blockchain": "^0.1.0-beta.17",
-    "@uprtcl/evees-orbitdb": "^0.1.0-beta.17",
+    "@uprtcl/evees-blockchain": "^0.1.0-beta.18",
+    "@uprtcl/evees-orbitdb": "^0.1.0-beta.18",
     "@uprtcl/graphql": "^0.1.0-beta.4",
     "@uprtcl/ipfs-provider": "^0.1.0-beta.6",
     "@uprtcl/lenses": "^0.1.0-beta.4",
