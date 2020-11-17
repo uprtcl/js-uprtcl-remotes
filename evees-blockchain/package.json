@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-blockchain",
-  "version": "0.1.0-beta.19",
+  "version": "0.1.0-beta.20",
   "description": "EveesRemote base class to implement Evees on any blockchain + Orbitdb",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -15,7 +15,7 @@
     "@uprtcl/common-ui": "^0.1.0-beta.10",
     "@uprtcl/cortex": "^0.1.0-beta.4",
     "@uprtcl/evees": "^0.1.0-beta.10",
-    "@uprtcl/evees-orbitdb": "^0.1.0-beta.19",
+    "@uprtcl/evees-orbitdb": "^0.1.0-beta.20",
     "@uprtcl/graphql": "^0.1.0-beta.4",
     "@uprtcl/ipfs-provider": "^0.1.0-beta.7",
     "@uprtcl/lenses": "^0.1.0-beta.4",
