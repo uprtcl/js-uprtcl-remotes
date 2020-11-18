@@ -101,8 +101,20 @@ export class EveesHttp implements EveesRemote {
     await this.provider.put(`/persp/${perspectiveId}/details`, details);
   }
 
-  async getContextPerspectives(context: string): Promise<string[]> {
-    return this.provider.getWithPut<any[]>(`/persp`, { context: context });
+  async getOtherPerspectives(perspectiveId: string): Promise<string[]> {
+    let responseObj: any = {};
+
+    try {
+      responseObj = await this.provider.getObject<string[]>(
+        `/persp/${perspectiveId}/others`
+      );
+    } catch (e) {
+      responseObj = {};
+    }
+
+    console.error(responseObj);
+
+    return responseObj;
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
