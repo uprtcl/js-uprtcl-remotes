@@ -106,7 +106,7 @@ export class EveesHttp implements EveesRemote {
 
     try {
       responseObj = await this.provider.getObject<string[]>(
-        `/persp/${perspectiveId}/others`
+        `/persp/${perspectiveId}/others?includeEcosystem=true`
       );
     } catch (e) {
       responseObj = {};
