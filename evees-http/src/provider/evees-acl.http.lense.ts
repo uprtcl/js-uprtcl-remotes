@@ -28,15 +28,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   permissions: BasicAdminInheritedPermissions | undefined;
 
   @property({ attribute: false })
-  canWrite: boolean = false;
-
-  @property({ attribute: false })
-  canRead: boolean = false;
-
-  @property({ attribute: false })
-  canAdmin: boolean = false;
-
-  @property({ attribute: false })
   currentUser!: string;
 
   client!: ApolloClient<any>;
@@ -56,6 +47,8 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   ];
 
   async firstUpdated() {
+    if (!this.isConnected) return;
+
     this.client = this.request(ApolloClientModule.bindings.Client);
     const remoteId = await EveesHelpers.getPerspectiveRemoteId(
       this.client,
@@ -86,13 +79,12 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       this.uref
     );
 
-    this.canRead = userPermissions.canRead;
-    this.canWrite = userPermissions.canWrite;
-    this.canAdmin = userPermissions.canAdmin;
-
-    this.permissions = this.canAdmin
-      ? await this.remote.accessControl.getPermissions(this.uref)
-      : undefined;
+    this.permissions = undefined;
+    if (userPermissions.canAdmin) {
+      this.permissions = await this.remote.accessControl.getPermissions(
+        this.uref
+      );
+    }
 
     await this.loadDelegatedTitle();
 

@@ -20,15 +20,13 @@ export class EveesAccessControlHttp implements AccessControlService {
   }
 
   async getUserPermissions(hash: string) {
-    return await this.provider.getObject<UserPermissions>(`/permissions/${hash}/can`);
+    return await this.provider.getObject<UserPermissions>(
+      `/permissions/${hash}`
+    );
   }
 
   async getPermissions(hash: string): Promise<any | undefined> {
-    return this.provider.getObject(`/permissions/${hash}`);
-  }
-
-  async setPermissions(hash: string, permissions: any) {
-    await this.provider.put(`/permissions/${hash}`, permissions);
+    return this.provider.getObject(`/permissions/${hash}/details`);
   }
 
   async removePermissions(hash: string, userId: string) {
@@ -68,7 +66,8 @@ export class EveesAccessControlHttp implements AccessControlService {
           <evees-http-permissions
             uref=${entity.uref}
             parentId=${entity.parentId}
-          > </evees-http-permissions>
+          >
+          </evees-http-permissions>
         `;
       },
     };

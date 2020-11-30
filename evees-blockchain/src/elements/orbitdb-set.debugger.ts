@@ -1,4 +1,11 @@
-import { LitElement, html, css, internalProperty, query } from 'lit-element';
+import {
+  LitElement,
+  html,
+  css,
+  internalProperty,
+  query,
+  property,
+} from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { Logger } from '@uprtcl/micro-orchestrator';
@@ -26,6 +33,9 @@ interface EntityDetails {
 export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
   logger = new Logger('Debug Component');
 
+  @property({ type: Boolean, attribute: 'show-contexts' })
+  showDeleteContexts: boolean = false;
+
   @internalProperty()
   reading: boolean = false;
 
@@ -34,9 +44,6 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
 
   @internalProperty()
   loading: boolean = true;
-
-  @internalProperty()
-  deleteContexts: boolean = false;
 
   @internalProperty()
   perspective!: Secured<Perspective>;
@@ -176,7 +183,7 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
         ? html` <div class="perspective">
               <pre>${JSON.stringify(this.details, null, 2)}</pre>
             </div>
-            ${this.deleteContexts
+            ${this.showDeleteContexts
               ? html`<div class="context-perspectives">
                   <b>Context: ${this.perspective.object.payload.context}</b>
                   <uprtcl-list>
