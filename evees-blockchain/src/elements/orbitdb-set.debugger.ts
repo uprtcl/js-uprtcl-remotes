@@ -91,17 +91,16 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
       object,
     };
 
+    const otherPerspectives = await this.remote.getContextPerspectives(
+      this.perspective.object.payload.context
+    );
+
     const remote = this.remotes.find(
       (r) => r.id === this.perspective.object.payload.remote
     );
     if (!remote) {
       throw new Error(`remote not found`);
     }
-
-    const otherPerspectives = await remote.getContextPerspectives(
-      this.perspective.object.payload.context
-    );
-
     const details = await remote.getPerspective(this.perspective.id);
 
     const store = await this.remote.orbitdbcustom.getStore(
