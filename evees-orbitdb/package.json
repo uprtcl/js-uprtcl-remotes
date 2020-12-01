@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-orbitdb",
-  "version": "0.1.0-beta.20",
+  "version": "0.1.0-beta.21",
   "description": "EveesRemote implemented on the Ethereum Blockchain",
   "homepage": "https://uprtcl.io",
   "scripts": {
