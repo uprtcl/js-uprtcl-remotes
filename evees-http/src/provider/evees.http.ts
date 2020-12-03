@@ -112,8 +112,6 @@ export class EveesHttp implements EveesRemote {
       responseObj = {};
     }
 
-    console.error(responseObj);
-
     return responseObj;
   }
 
