@@ -1,14 +1,11 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
-import { ApolloClient } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesModule, EveesRemote } from '@uprtcl/evees';
 
 import { EveesBlockchainCached } from './evees.blockchain.cached';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { ChainConnectionDetails, RemoteUI } from '../types';
-import { error } from 'console';
 
 export class EveesBlockchainCachedRemoteLense extends moduleConnect(
   LitElement

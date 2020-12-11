@@ -1,8 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
-import { ApolloClient, gql } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesBindings, EveesHelpers, EveesRemote } from '@uprtcl/evees';
 import { HasTitle, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 

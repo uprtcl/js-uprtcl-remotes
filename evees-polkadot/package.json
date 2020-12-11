@@ -24,7 +24,6 @@
     "@uprtcl/evees": "^0.1.0-beta.14",
     "@uprtcl/evees-blockchain": "^0.1.0-beta.22",
     "@uprtcl/evees-orbitdb": "^0.1.0-beta.22",
-    "@uprtcl/graphql": "^0.1.0-beta.4",
     "@uprtcl/ipfs-provider": "^0.1.0-beta.8",
     "@uprtcl/lenses": "^0.1.0-beta.4",
     "@uprtcl/micro-orchestrator": "^0.1.0-beta.4",

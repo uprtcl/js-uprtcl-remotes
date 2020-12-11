@@ -16,7 +16,6 @@
     "@uprtcl/cortex": "^0.1.0-beta.4",
     "@uprtcl/evees": "^0.1.0-beta.7",
     "@uprtcl/evees-orbitdb": "^0.1.0-beta.16",
-    "@uprtcl/graphql": "^0.1.0-beta.4",
     "@uprtcl/ipfs-provider": "^0.1.0-beta.6",
     "@uprtcl/lenses": "^0.1.0-beta.4",
     "@uprtcl/micro-orchestrator": "^0.1.0-beta.4",
