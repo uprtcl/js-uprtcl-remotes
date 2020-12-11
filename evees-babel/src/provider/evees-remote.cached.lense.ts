@@ -29,7 +29,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
   @internalProperty()
   settingCustom: boolean = false;
 
-  client!: ApolloClient<any>;
+  client!: UprtclClient<any>;
   remote!: EveesBlockchainCached;
   dialogOptions: MenuConfig = {
     close: {
@@ -42,7 +42,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
   connections!: ChainConnectionDetails[];
 
   async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(UprtclClientModule.bindings.Client);
     const remotes = this.requestAll(
       EveesModule.bindings.EveesRemote
     ) as EveesRemote[];

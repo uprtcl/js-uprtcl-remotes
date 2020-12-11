@@ -27,11 +27,11 @@ export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
   @property({ attribute: false })
   canWrite!: boolean;
 
-  client!: ApolloClient<any>;
+  client!: UprtclClient<any>;
   remote!: EveesOrbitDB;
 
   async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(UprtclClientModule.bindings.Client);
     this.load();
   }
 

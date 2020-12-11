@@ -20,7 +20,6 @@
     "@uprtcl/micro-orchestrator": "^0.1.0-beta.4",
     "@uprtcl/multiplatform": "^0.1.0-beta.4",
     "@uprtcl/orbitdb-provider": "^0.1.0-beta.8",
-    "apollo-boost": "^0.4.7",
     "cbor-js": "^0.1.0",
     "inversify": "^5.0.1",
     "ipfs": "^0.50.2",

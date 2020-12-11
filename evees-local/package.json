@@ -18,7 +18,6 @@
     "@uprtcl/lenses": "^0.1.0-beta.4",
     "@uprtcl/micro-orchestrator": "^0.1.0-beta.4",
     "@uprtcl/multiplatform": "^0.1.0-beta.4",
-    "apollo-boost": "^0.4.7",
     "dexie": "^3.0.2"
   },
   "devDependencies": {
