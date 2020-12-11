@@ -31,7 +31,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   @property({ attribute: false })
   voting: boolean = false;
 
-  client!: UprtclClient<any>;
+  client!: EveesClient;
   remotes!: EveesRemote[];
   remote!: EveesPolkadotCouncil;
   fromPerspective!: Signed<Perspective>;
@@ -46,7 +46,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   };
 
   async firstUpdated() {
-    this.client = this.request(UprtclClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];

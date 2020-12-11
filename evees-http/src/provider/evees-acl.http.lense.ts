@@ -28,7 +28,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   @property({ attribute: false })
   currentUser!: string;
 
-  client!: UprtclClient<any>;
+  client!: EveesClient;
   remote!: EveesHttp;
 
   delegatedTitle: string = '';
@@ -47,7 +47,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   async firstUpdated() {
     if (!this.isConnected) return;
 
-    this.client = this.request(UprtclClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     const remoteId = await EveesHelpers.getPerspectiveRemoteId(
       this.client,
       this.uref

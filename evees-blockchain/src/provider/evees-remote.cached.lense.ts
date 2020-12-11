@@ -28,7 +28,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
   @internalProperty()
   settingCustom: boolean = false;
 
-  client!: UprtclClient<any>;
+  client!: EveesClient;
   remote!: EveesBlockchainCached;
   dialogOptions: MenuConfig = {
     close: {
@@ -41,7 +41,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
   connections!: ChainConnectionDetails[];
 
   async firstUpdated() {
-    this.client = this.request(UprtclClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     const remotes = this.requestAll(
       EveesModule.bindings.EveesRemote
     ) as EveesRemote[];

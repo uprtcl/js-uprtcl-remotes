@@ -44,14 +44,14 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
 
-  protected client!: UprtclClient<any>;
+  protected client!: EveesClient;
   protected recognizer!: PatternRecognizer;
 
   protected remote!: EveesBlockchainCached;
   protected workspace!: EveesWorkspace;
 
   async firstUpdated() {
-    this.client = this.request(UprtclClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     const remote = (this.requestAll(

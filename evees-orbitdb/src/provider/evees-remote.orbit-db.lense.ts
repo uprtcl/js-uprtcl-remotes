@@ -12,11 +12,11 @@ export class RemoteOrbitdDbLense extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loading: boolean = true;
 
-  client!: UprtclClient<any>;
+  client!: EveesClient;
   remote!: EveesOrbitDB;
 
   async firstUpdated() {
-    this.client = this.request(UprtclClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.load();
   }
 

@@ -27,11 +27,11 @@ export class PermissionsFixedLense extends moduleConnect(LitElement) {
   @property({ attribute: false })
   canWrite!: boolean;
 
-  client!: UprtclClient<any>;
+  client!: EveesClient;
   remote!: EveesBlockchainCached;
 
   async firstUpdated() {
-    this.client = this.request(UprtclClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.load();
   }
 
