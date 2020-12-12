@@ -66,6 +66,7 @@ export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
   }
 
   renderOwner() {
+    if (!this.remote) return html``;
     return html`
       <evees-author
         user-id=${this.owner}
