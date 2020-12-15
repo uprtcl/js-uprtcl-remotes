@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-polkadot",
-  "version": "0.1.0-beta.22",
+  "version": "0.1.0-beta.23",
   "description": "EveesRemote implemented on a Polkadot Blockchain",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -22,8 +22,8 @@
     "@uprtcl/common-ui": "^0.1.0-beta.15",
     "@uprtcl/cortex": "^0.1.0-beta.4",
     "@uprtcl/evees": "^0.1.0-beta.15",
-    "@uprtcl/evees-blockchain": "^0.1.0-beta.22",
-    "@uprtcl/evees-orbitdb": "^0.1.0-beta.22",
+    "@uprtcl/evees-blockchain": "^0.1.0-beta.23",
+    "@uprtcl/evees-orbitdb": "^0.1.0-beta.23",
     "@uprtcl/graphql": "^0.1.0-beta.4",
     "@uprtcl/ipfs-provider": "^0.1.0-beta.11",
     "@uprtcl/lenses": "^0.1.0-beta.4",
