@@ -5,12 +5,16 @@ import { AccessControlService } from '@uprtcl/evees';
 import { Lens } from '@uprtcl/lenses';
 import { HttpProvider } from '@uprtcl/http-provider';
 import { PermissionType, UserPermissions } from './types';
+import { EveesHttpCacheDB } from './evees.http.cache.db';
 
 const uprtcl_api: string = 'uprtcl-acl-v1';
 export class EveesAccessControlHttp implements AccessControlService {
   logger = new Logger('HTTP-EVEES-ACCESS-CONTROL');
 
-  constructor(protected provider: HttpProvider) {}
+  constructor(
+    protected provider: HttpProvider,
+    protected cache: EveesHttpCacheDB
+  ) {}
 
   async toggleDelegate(hash: string, delegate: boolean, delegateTo: string) {
     await this.provider.put(
@@ -19,13 +23,26 @@ export class EveesAccessControlHttp implements AccessControlService {
     );
   }
 
-  async getUserPermissions(hash: string) {
+  async getUserPermissions(hash: string): Promise<UserPermissions> {
+    const cachedNew = await this.cache.newPerspectives.get(hash);
+    if (cachedNew !== undefined) {
+      return {
+        canAdmin: true,
+        canRead: true,
+        canWrite: true,
+      };
+    }
     return await this.provider.getObject<UserPermissions>(
       `/permissions/${hash}`
     );
   }
 
   async getPermissions(hash: string): Promise<any | undefined> {
+    const cachedNew = await this.cache.newPerspectives.get(hash);
+    if (cachedNew !== undefined) {
+      return undefined;
+    }
+
     return this.provider.getObject(`/permissions/${hash}/details`);
   }
 
@@ -53,6 +70,11 @@ export class EveesAccessControlHttp implements AccessControlService {
   }
 
   async canWrite(uref: string) {
+    const cachedNew = await this.cache.newPerspectives.get(uref);
+    if (cachedNew !== undefined) {
+      return true;
+    }
+
     const res = await this.getUserPermissions(uref);
     return res.canWrite;
   }

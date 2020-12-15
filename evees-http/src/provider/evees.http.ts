@@ -1,8 +1,12 @@
 import { html } from 'lit-html';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { KnownSourcesHttp, HttpProvider } from '@uprtcl/http-provider';
-import { KnownSourcesService, CASStore } from '@uprtcl/multiplatform';
+import {
+  KnownSourcesHttp,
+  HttpProvider,
+  HttpStoreCached,
+} from '@uprtcl/http-provider';
+import { KnownSourcesService } from '@uprtcl/multiplatform';
 
 import {
   EveesRemote,
@@ -15,6 +19,7 @@ import {
 
 import { EveesAccessControlHttp } from './evees-acl.http';
 import { ProposalsHttp } from './proposals.http';
+import { EveesHttpCacheDB } from './evees.http.cache.db';
 
 const evees_api: string = 'evees-v1';
 
@@ -22,12 +27,14 @@ export class EveesHttp implements EveesRemote {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
   knownSources: KnownSourcesService;
+  cache: EveesHttpCacheDB;
 
   accessControl: EveesAccessControlHttp;
   proposals: ProposalsHttp;
 
-  constructor(protected provider: HttpProvider, public store: CASStore) {
-    this.accessControl = new EveesAccessControlHttp(this.provider);
+  constructor(protected provider: HttpProvider, public store: HttpStoreCached) {
+    this.cache = new EveesHttpCacheDB(`evees-cache-${this.provider.id}`);
+    this.accessControl = new EveesAccessControlHttp(this.provider, this.cache);
     this.proposals = new ProposalsHttp(this.provider, this);
     this.knownSources = new KnownSourcesHttp(this.provider);
   }
@@ -51,7 +58,7 @@ export class EveesHttp implements EveesRemote {
   }
 
   get casID() {
-    return `http:store:${this.provider.pOptions.host}`;
+    return this.store.casID;
   }
 
   canWrite(uref: string): Promise<boolean> {
@@ -78,11 +85,41 @@ export class EveesHttp implements EveesRemote {
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    const current = await this.cache.newPerspectives.get(
+      perspectiveData.perspective.id
+    );
+    if (!current) {
+      await this.cache.newPerspectives.put({
+        id: perspectiveData.perspective.id,
+        newPerspective: perspectiveData,
+        context: perspectiveData.perspective.object.payload.context,
+      });
+    }
+  }
+
+  async flush() {
+    await this.store.flush();
+    const newPerspectives = await this.cache.newPerspectives.toArray();
+
     await this.provider.post('/persp', {
-      perspective: perspectiveData.perspective,
-      details: perspectiveData.details,
-      parentId: perspectiveData.parentId,
+      perspectives: newPerspectives.map((np) => np.newPerspective),
     });
+
+    const updates = await this.cache.updates.toArray();
+
+    await this.provider.put(`/persp/details`, {
+      details: updates.map((update) => {
+        return {
+          id: update.id,
+          details: {
+            head: update.head,
+          },
+        };
+      }),
+    });
+
+    await this.cache.newPerspectives.clear();
+    await this.cache.updates.clear();
   }
 
   async createPerspectiveBatch(
@@ -98,14 +135,41 @@ export class EveesHttp implements EveesRemote {
     perspectiveId: string,
     details: Partial<PerspectiveDetails>
   ): Promise<void> {
-    await this.provider.put(`/persp/${perspectiveId}/details`, details);
+    /** data must be in the backend to update a perspective */
+    this.cache.updates.put({
+      id: perspectiveId,
+      head: details.headId as string,
+    });
   }
 
   async getContextPerspectives(context: string): Promise<string[]> {
-    return this.provider.getWithPut<any[]>(`/persp`, { context: context });
+    const perspectiveIds = await this.provider.getWithPut<any[]>(`/persp`, {
+      context: context,
+    });
+    const cachedPerspectives = this.cache
+      ? await this.cache.newPerspectives
+          .where('context')
+          .equals(context)
+          .toArray()
+      : [];
+
+    return perspectiveIds.concat(cachedPerspectives.map((e) => e.id));
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
+    const cachedUpdate = await this.cache.updates.get(perspectiveId);
+    if (cachedUpdate !== undefined) {
+      return { headId: cachedUpdate.head };
+    }
+
+    const cachedNewPerspective = await this.cache.newPerspectives.get(
+      perspectiveId
+    );
+
+    if (cachedNewPerspective !== undefined) {
+      return cachedNewPerspective.newPerspective.details;
+    }
+
     let responseObj: any = {};
     try {
       responseObj = await this.provider.getObject<PerspectiveDetails>(
