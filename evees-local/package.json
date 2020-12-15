@@ -12,9 +12,9 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.1.0-beta.14",
+    "@uprtcl/common-ui": "^0.1.0-beta.15",
     "@uprtcl/cortex": "^0.1.0-beta.4",
-    "@uprtcl/evees": "^0.1.0-beta.14",
+    "@uprtcl/evees": "^0.1.0-beta.15",
     "@uprtcl/graphql": "^0.1.0-beta.4",
     "@uprtcl/lenses": "^0.1.0-beta.4",
     "@uprtcl/micro-orchestrator": "^0.1.0-beta.4",
