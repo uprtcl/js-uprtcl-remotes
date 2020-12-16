@@ -55,10 +55,12 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       this.uref
     );
 
+    if (!this.isConnected) return;
     const remote = (this.requestAll(
       EveesBindings.EveesRemote
     ) as EveesRemote[]).find((remote) => remote.id === remoteId);
 
+    if (!this.isConnected) return;
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     if (!remote) throw new Error(`remote not registered ${remoteId}`);

@@ -98,21 +98,24 @@ export class EveesHttp implements EveesRemote {
   }
 
   async flush() {
+    this.logger.log('flusing');
     await this.store.flush();
     const newPerspectives = await this.cache.newPerspectives.toArray();
 
+    this.logger.log('newPerspectives:', { newPerspectives });
     await this.provider.post('/persp', {
       perspectives: newPerspectives.map((np) => np.newPerspective),
     });
 
     const updates = await this.cache.updates.toArray();
 
+    this.logger.log('updates:', { updates });
     await this.provider.put(`/persp/details`, {
       details: updates.map((update) => {
         return {
           id: update.id,
           details: {
-            head: update.head,
+            headId: update.head,
           },
         };
       }),
@@ -120,6 +123,7 @@ export class EveesHttp implements EveesRemote {
 
     await this.cache.newPerspectives.clear();
     await this.cache.updates.clear();
+    this.logger.log('flushing done');
   }
 
   async createPerspectiveBatch(
